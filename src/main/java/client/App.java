@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -18,7 +20,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.xml.namespace.QName;
+
 
 
 class App {
@@ -28,20 +30,31 @@ class App {
             // String date = "2022/06/04";
             // System.out.println(getAll(date));
             
-            /* get */
-            // BufferedImage image = base64Decoder(get("quiz3"));
-            // File outputfile = new File("image.jpg");
-            // ImageIO.write(image, "jpg", outputfile);
-            
             /* Set */
             // String uid = "quiz2";            //Quiz name
             // String startAt = "2022/06/04";
             // Integer time = 90;
             // BufferedImage image = ImageIO.read(new File("image.jpg"));
             // set(uid,startAt,time,image);
+
+            /* get */
+            // BufferedImage image = base64Decoder(get("quiz3"));
+            // File outputfile = new File("image.jpg");
+            // ImageIO.write(image, "jpg", outputfile);
             
+            // /* getMyInfo */
+            // JSONArray info = getMyInfo("quiz3", "Peter");
+            // for(int i = 0 ; i < info.size() ; i++){
+            //     System.out.println(info.get(i));
+            // }
+            
+            /* getMyquiz */
+            // BufferedImage image = base64Decoder(getMyQuiz("quiz3", "Peter",(String)info.get(0)));
+            // File outputfile = new File("image1.jpg");
+            // ImageIO.write(image, "jpg", outputfile);
+
             /* submit */
-            // String uid = "Peter";               //Student name
+            // String uid = "Peter";                //Student name
             // String name = "quiz3";              //Quiz name
             // BufferedImage image = ImageIO.read(new File("image.jpg"));
             // submit(uid,name,image);
@@ -113,6 +126,49 @@ class App {
         try{
             StringBuilder result = new StringBuilder();
             URL url = new URL("http://203.121.239.106:8080/quiz/get?name=" + name);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()))) {
+                for (String line; (line = reader.readLine()) != null; ) {
+                    result.append(line);
+                }
+            }
+            JSONParser parser = new JSONParser();
+            HashMap<String,String> obj = (JSONObject)parser.parse(result.toString());
+            return obj.get("data");
+
+        }catch(Exception e){}
+        return null;
+    }
+    
+    public static JSONArray getMyInfo(String name,String uid){
+        try{
+            StringBuilder result = new StringBuilder();
+            URL url = new URL("http://203.121.239.106:8080/quiz/getMyinfo?name=" + name + "&uid=" + uid);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()))) {
+                for (String line; (line = reader.readLine()) != null; ) {
+                    result.append(line);
+                }
+            }
+            JSONParser parser = new JSONParser();
+            JSONArray obj = (JSONArray)parser.parse(result.toString());
+            return obj;
+
+        }catch(Exception e){}
+        return null;
+    }
+    
+    public static String getMyQuiz(String name,String uid,String time){
+        try{
+            StringBuilder result = new StringBuilder();
+            // SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss");
+            // time = formatter.format(formatter.parse(time));
+            // System.out.println(time);
+            URL url = new URL("http://203.121.239.106:8080/quiz/getMyQuiz?name=" + name + "&uid=" + uid + "&time=" + time);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
