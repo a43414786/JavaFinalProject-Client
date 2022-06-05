@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,8 +29,15 @@ class App {
         
 
         try {
+            String a = "[[1,2,3],[4,5,6],[7,8,9]]";
+            StringTokenizer stk = new StringTokenizer(a,"[],");
+            while(stk.hasMoreTokens()){
+                System.out.println(stk.nextToken());
+            }
+            
             Client client = new Client();
-            client.setName("Peter");
+            client.setStudentId("Peter");
+            client.getAll();
             /* getAll */
             // String a = client.getAll("2020/04/22");
             // System.out.println(a);
@@ -59,13 +67,13 @@ class App {
 
 class Client{
 
-    private String name = null;
+    private String studentId = null;
     private String base64 = null; 
     private BufferedImage bufferedImage = null;
     private JSONArray myinfo = null;
     
-    public void setName(String name){
-        this.name = name;
+    public void setStudentId(String studentId){
+        this.studentId = studentId;
     }
 
     public BufferedImage getImage(){
@@ -82,7 +90,7 @@ class Client{
         }
     }
 
-    public void set(String startAt,Integer time,BufferedImage image){
+    public void set(String name,String startAt,Integer time,BufferedImage image){
         try{
             bufferedImage = image;
 
@@ -124,11 +132,10 @@ class Client{
         }
     }
 
-    public String getAll(String date){
-
+    public String getAll(){
         try{
             StringBuilder result = new StringBuilder();
-            URL url = new URL("http://203.121.239.106:8080/quiz/getAll?date=" + date);
+            URL url = new URL("http://203.121.239.106:8080/quiz/getAll");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -137,15 +144,26 @@ class Client{
                     result.append(line);
                 }
             }
-            return result.toString();
+            JSONParser parser = new JSONParser();
+            JSONArray arr = (JSONArray)parser.parse(result.toString());
+            
+            for(int i = 0 ; i < arr.size() ; i++){
+                JSONObject obj = (JSONObject)arr.get(i);
+                System.out.printf("name : %s\t",obj.get("name"));
+                System.out.printf("time : %s\t",obj.get("time"));
+                System.out.printf("startAt : %s\n",obj.get("startAt"));
+                
+            }
+            // System.out.println(((JSONObject)arr.get(0)).get("name"));
+            return null;
         }catch(Exception e){}
         return null;
     }
     
-    public void get(String uid){
+    public void get(String name){
         try{
             StringBuilder result = new StringBuilder();
-            URL url = new URL("http://203.121.239.106:8080/quiz/get?name=" + uid);
+            URL url = new URL("http://203.121.239.106:8080/quiz/get?name=" + name);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -163,10 +181,10 @@ class Client{
         
     }
     
-    public void getMyInfo(String uid){
+    public void getMyInfo(String name){
         try{
             StringBuilder result = new StringBuilder();
-            URL url = new URL("http://203.121.239.106:8080/quiz/getMyinfo?name=" + name + "&uid=" + uid);
+            URL url = new URL("http://203.121.239.106:8080/quiz/getMyinfo?name=" + name + "&uid=" + studentId);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -180,13 +198,13 @@ class Client{
         }catch(Exception e){}
     }
     
-    public String getMyQuiz(String uid,int timeidx){
+    public String getMyQuiz(String name,int timeidx){
         try{
             StringBuilder result = new StringBuilder();
             // SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss");
             // time = formatter.format(formatter.parse(time));
             // System.out.println(time);
-            URL url = new URL("http://203.121.239.106:8080/quiz/getMyQuiz?name=" + name + "&uid=" + uid + "&time=" + (String)myinfo.get(timeidx));
+            URL url = new URL("http://203.121.239.106:8080/quiz/getMyQuiz?name=" + name + "&uid=" + studentId + "&time=" + (String)myinfo.get(timeidx));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -203,7 +221,7 @@ class Client{
         return null;
     }
     
-    public void submit(String uid,BufferedImage image){
+    public void submit(String name,BufferedImage image){
         try {
             bufferedImage = image;
             // DisplayImage(image);
@@ -213,7 +231,7 @@ class Client{
             // URL dummyUrl = new URL("http://localhost:8080/quiz/finish");
 
             HashMap<String,String> data = new HashMap<String,String>();
-            data.put("uid", uid);
+            data.put("uid", studentId);
             data.put("name", name);
             data.put("data", base64);
             String dummyData = JSONObject.toJSONString(data);
