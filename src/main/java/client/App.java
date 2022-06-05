@@ -40,7 +40,11 @@ class App {
             // String a = client.getAll("2020/04/22");
             // System.out.println(a);
             /* Set */
-            // client.set();
+            
+            for(int i = 1 ; i < 11 ; i++){
+                BufferedImage image = ImageIO.read(new File("img" + i + ".jpg"));
+                client.set("quiz" + i,"2022/06/05",90,image);
+            }
             /* get */
             // client.get("quiz3");
             // client.displayImage();
@@ -51,8 +55,10 @@ class App {
             // client.getMyQuiz("quiz3", 1);
             // client.displayImage();
             /* submit */
-            // BufferedImage image = ImageIO.read(new File("image.jpg"));
-            // client.submit("quiz3", image);
+            // for(int i = 1 ; i < 11 ; i++){
+            //     BufferedImage image = ImageIO.read(new File("img" + i + ".jpg"));
+            //     client.submit("quiz" + i, image);
+            // }
             
         }catch(Exception e){
             e.printStackTrace();
@@ -79,8 +85,12 @@ class Client{
         return bufferedImage;
     }
     
-    public JSONArray getMyInfo(){
-        return myinfo;
+    public ArrayList<String> getMyInfo(){
+        ArrayList<String> arr = new ArrayList<String>();
+        for(int i = 0 ; i < myinfo.size() ; i++){
+            arr.add((String)myinfo.get(i));
+        }
+        return arr;
     }
 
     public ArrayList<String> getQuizs(){
@@ -205,6 +215,7 @@ class Client{
             }
             JSONParser parser = new JSONParser();
             myinfo = (JSONArray)parser.parse(result.toString());
+            
         }catch(Exception e){}
     }
     
