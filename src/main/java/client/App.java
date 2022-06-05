@@ -25,48 +25,68 @@ import javax.swing.JLabel;
 
 class App {
     public static void main(String[] args){
+        
+
         try {
+            Client client = new Client();
+            client.setName("Peter");
             /* getAll */
-            // String date = "2022/06/04";
-            // System.out.println(getAll(date));
-            
+            // String a = client.getAll("2020/04/22");
+            // System.out.println(a);
             /* Set */
-            // String uid = "quiz2";            //Quiz name
-            // String startAt = "2022/06/04";
-            // Integer time = 90;
-            // BufferedImage image = ImageIO.read(new File("image.jpg"));
-            // set(uid,startAt,time,image);
-
+            // client.set();
             /* get */
-            // BufferedImage image = base64Decoder(get("quiz3"));
-            // File outputfile = new File("image.jpg");
-            // ImageIO.write(image, "jpg", outputfile);
-            
-            // /* getMyInfo */
-            // JSONArray info = getMyInfo("quiz3", "Peter");
-            // for(int i = 0 ; i < info.size() ; i++){
-            //     System.out.println(info.get(i));
-            // }
-            
+            // client.get("quiz3");
+            // client.displayImage();
+            /* getMyInfo */
+            // client.getMyInfo("quiz3");
+            // client.printMyInfo();
             /* getMyquiz */
-            // BufferedImage image = base64Decoder(getMyQuiz("quiz3", "Peter",(String)info.get(0)));
-            // File outputfile = new File("image1.jpg");
-            // ImageIO.write(image, "jpg", outputfile);
-
+            // client.getMyQuiz("quiz3", 1);
+            // client.displayImage();
             /* submit */
-            // String uid = "Peter";                //Student name
-            // String name = "quiz3";              //Quiz name
             // BufferedImage image = ImageIO.read(new File("image.jpg"));
-            // submit(uid,name,image);
-
+            // client.submit("quiz3", image);
+            
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public static void set(String name,String startAt,Integer time,BufferedImage image){
+
+}
+
+
+class Client{
+
+    private String name = null;
+    private String base64 = null; 
+    private BufferedImage bufferedImage = null;
+    private JSONArray myinfo = null;
+    
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public BufferedImage getImage(){
+        return bufferedImage;
+    }
+    
+    public JSONArray getMyInfo(){
+        return myinfo;
+    }
+
+    public void printMyInfo(){
+        for(int i = 0 ; i < myinfo.size() ; i++){
+            System.out.printf("%d : %s\n",i,(String)myinfo.get(i));
+        }
+    }
+
+    public void set(String startAt,Integer time,BufferedImage image){
         try{
-            String encode = base64Encoder(image);
+            bufferedImage = image;
+
+            base64Encoder();
        
             URL dummyUrl = new URL("http://203.121.239.106:8080/quiz/set");
 
@@ -74,7 +94,7 @@ class App {
             data.put("name", name);
             data.put("startAt", startAt);
             data.put("time", time.toString());
-            data.put("data", encode);
+            data.put("data", base64);
             String dummyData = JSONObject.toJSONString(data);
 
             // System.out.println(dummyData);
@@ -104,7 +124,7 @@ class App {
         }
     }
 
-    public static String getAll(String date){
+    public String getAll(String date){
 
         try{
             StringBuilder result = new StringBuilder();
@@ -122,10 +142,10 @@ class App {
         return null;
     }
     
-    public static String get(String name){
+    public void get(String uid){
         try{
             StringBuilder result = new StringBuilder();
-            URL url = new URL("http://203.121.239.106:8080/quiz/get?name=" + name);
+            URL url = new URL("http://203.121.239.106:8080/quiz/get?name=" + uid);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -136,13 +156,14 @@ class App {
             }
             JSONParser parser = new JSONParser();
             HashMap<String,String> obj = (JSONObject)parser.parse(result.toString());
-            return obj.get("data");
+            base64 = obj.get("data");
+            base64Decoder();
 
         }catch(Exception e){}
-        return null;
+        
     }
     
-    public static JSONArray getMyInfo(String name,String uid){
+    public void getMyInfo(String uid){
         try{
             StringBuilder result = new StringBuilder();
             URL url = new URL("http://203.121.239.106:8080/quiz/getMyinfo?name=" + name + "&uid=" + uid);
@@ -155,20 +176,17 @@ class App {
                 }
             }
             JSONParser parser = new JSONParser();
-            JSONArray obj = (JSONArray)parser.parse(result.toString());
-            return obj;
-
+            myinfo = (JSONArray)parser.parse(result.toString());
         }catch(Exception e){}
-        return null;
     }
     
-    public static String getMyQuiz(String name,String uid,String time){
+    public String getMyQuiz(String uid,int timeidx){
         try{
             StringBuilder result = new StringBuilder();
             // SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss");
             // time = formatter.format(formatter.parse(time));
             // System.out.println(time);
-            URL url = new URL("http://203.121.239.106:8080/quiz/getMyQuiz?name=" + name + "&uid=" + uid + "&time=" + time);
+            URL url = new URL("http://203.121.239.106:8080/quiz/getMyQuiz?name=" + name + "&uid=" + uid + "&time=" + (String)myinfo.get(timeidx));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (BufferedReader reader = new BufferedReader(
@@ -179,17 +197,17 @@ class App {
             }
             JSONParser parser = new JSONParser();
             HashMap<String,String> obj = (JSONObject)parser.parse(result.toString());
-            return obj.get("data");
-
+            base64 = obj.get("data");
+            base64Decoder();
         }catch(Exception e){}
         return null;
     }
     
-    public static void submit(String uid,String name,BufferedImage image){
+    public void submit(String uid,BufferedImage image){
         try {
-    
+            bufferedImage = image;
             // DisplayImage(image);
-            String encode = base64Encoder(image);
+            base64Encoder();
        
             URL dummyUrl = new URL("http://203.121.239.106:8080/quiz/finish");
             // URL dummyUrl = new URL("http://localhost:8080/quiz/finish");
@@ -197,7 +215,7 @@ class App {
             HashMap<String,String> data = new HashMap<String,String>();
             data.put("uid", uid);
             data.put("name", name);
-            data.put("data", encode);
+            data.put("data", base64);
             String dummyData = JSONObject.toJSONString(data);
 
             // System.out.println(dummyData);
@@ -227,38 +245,39 @@ class App {
         }
     }
     
-    static public BufferedImage base64Decoder(String base64){
+    public void base64Decoder(){
         try{
             Base64.Decoder decoder = Base64.getDecoder();
             byte[] imageBytes = decoder.decode(base64);
-            return ImageIO.read(new ByteArrayInputStream(imageBytes));
+            bufferedImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
         }
         catch(Exception e){
-            return null;
+            
         }
     }
 
-    static public String base64Encoder(BufferedImage bufferedImage){
+    public void base64Encoder(){
         try{
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(bufferedImage, "jpg", bos);
             byte[] imageBytes = bos.toByteArray();
             Base64.Encoder encoder = Base64.getEncoder();
-            return encoder.encodeToString(imageBytes);
+            base64 = encoder.encodeToString(imageBytes);
         }catch(Exception e){
-            return null;
+            
         }
     }
     
-    static public void displayImage(BufferedImage img)
+    public void displayImage()
     {
-        ImageIcon icon=new ImageIcon(img);
+        ImageIcon icon=new ImageIcon(bufferedImage);
         JFrame frame=new JFrame();
-        frame.setSize(img.getWidth(),img.getHeight());
+        frame.setSize(bufferedImage.getWidth(),bufferedImage.getHeight());
         JLabel lbl=new JLabel();
         lbl.setIcon(icon);
         frame.add(lbl);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
+
 }
