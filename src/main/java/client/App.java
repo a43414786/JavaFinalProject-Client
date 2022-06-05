@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
@@ -29,15 +31,11 @@ class App {
         
 
         try {
-            String a = "[[1,2,3],[4,5,6],[7,8,9]]";
-            StringTokenizer stk = new StringTokenizer(a,"[],");
-            while(stk.hasMoreTokens()){
-                System.out.println(stk.nextToken());
-            }
             
             Client client = new Client();
             client.setStudentId("Peter");
             client.getAll();
+            client.printQuizs();
             /* getAll */
             // String a = client.getAll("2020/04/22");
             // System.out.println(a);
@@ -71,6 +69,7 @@ class Client{
     private String base64 = null; 
     private BufferedImage bufferedImage = null;
     private JSONArray myinfo = null;
+    private ArrayList<String> quizs = new ArrayList<String>();
     
     public void setStudentId(String studentId){
         this.studentId = studentId;
@@ -84,9 +83,19 @@ class Client{
         return myinfo;
     }
 
+    public ArrayList<String> getQuizs(){
+        return quizs;
+    }
+
     public void printMyInfo(){
         for(int i = 0 ; i < myinfo.size() ; i++){
             System.out.printf("%d : %s\n",i,(String)myinfo.get(i));
+        }
+    }
+
+    public void printQuizs(){
+        for(int i = 0 ; i < quizs.size() ; i++){
+            System.out.println(quizs.get(i));
         }
     }
 
@@ -149,9 +158,10 @@ class Client{
             
             for(int i = 0 ; i < arr.size() ; i++){
                 JSONObject obj = (JSONObject)arr.get(i);
-                System.out.printf("name : %s\t",obj.get("name"));
-                System.out.printf("time : %s\t",obj.get("time"));
-                System.out.printf("startAt : %s\n",obj.get("startAt"));
+                quizs.add((String)obj.get("name"));
+                // System.out.printf("name : %s\t",obj.get("name"));
+                // System.out.printf("time : %s\t",obj.get("time"));
+                // System.out.printf("startAt : %s\n",obj.get("startAt"));
                 
             }
             // System.out.println(((JSONObject)arr.get(0)).get("name"));
